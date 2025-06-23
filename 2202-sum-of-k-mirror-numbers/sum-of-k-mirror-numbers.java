@@ -1,35 +1,74 @@
-public class Solution {
-    
-    public long kMirror(int k, int n) {
-        long sum = 0;
-        int count = 0;
-        int length = 1;
+class Solution 
+{
+    public long kMirror(int k, int n) 
+    {
+        // Step 1: Initialize sum
+        long sum = 0;             
+        
+        // Step 1: Initialize counter
+        int found = 0;
 
-        while (count < n) {
-            // Generate all palindromes of a given length
-            for (long i = (long)Math.pow(10, (length - 1) / 2); count < n && i < Math.pow(10, (length + 1) / 2); i++) {
-                String left = Long.toString(i);
-                String right = new StringBuilder(left).reverse().toString();
-                String full = (length % 2 == 0) ? (left + right) : (left + right.substring(1));
+        // Step 2: Loop over increasing decimal palindrome lengths
+        for (int len = 1; found < n; len++) 
+        {
+            int start = (int)Math.pow(10, (len - 1) / 2);   // Start of half
+            int end   = (int)Math.pow(10, (len + 1) / 2);   // End of half
 
-                long num = Long.parseLong(full);
-                if (isPalindrome(Long.toString(num, k))) {
-                    sum += num;
-                    count++;
+            // Step 3: Generate decimal palindromes using half and mirroring
+            for (int half = start; half < end; half++) 
+            {
+                long pal = createPalindrome(half, len % 2 == 1); // Step 3
+
+                // Step 4: Check if the number is also a base-k palindrome
+                if (isBaseKPalindrome(pal, k)) 
+                {
+                    // Step 5: Add to sum
+                    sum += pal;         
+                    
+                    // Step 5: Increment count
+                    found++;            
+                    
+                    // Step 6: If enough numbers found, return
+                    if (found == n)
+                    {
+                        return sum;
+                    }   
                 }
             }
-            length++;
         }
 
-        return sum;
+        return sum; // Final return
     }
 
-    // Helper function to check if a string is a palindrome
-    private boolean isPalindrome(String s) {
-        int i = 0, j = s.length() - 1;
-        while (i < j) {
-            if (s.charAt(i++) != s.charAt(j--)) return false;
+    // Step 3 helper: Create full decimal palindrome from half
+    private long createPalindrome(int half, boolean odd) 
+    {
+        long pal = half;
+        if (odd)
+        {
+            half /= 10;  // Drop last digit for odd-length palindromes
         }
-        return true;
+
+        while (half > 0) 
+        {
+            pal = pal * 10 + (half % 10);  // Mirror digit
+            half /= 10;
+        }
+        
+        return pal;
+    }
+
+    // Step 4 helper: Check if number is palindrome in base-k
+    private boolean isBaseKPalindrome(long num, int k) 
+    {
+        long rev = 0;
+        long orig = num;
+        while (num > 0) 
+        {
+            rev = rev * k + (num % k);  // Reconstruct reverse of base-k
+            num /= k;
+        }
+        
+        return rev == orig;
     }
 }
