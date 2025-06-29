@@ -7,7 +7,7 @@ class Solution {
     pows[0] = 1;
 
     for (int i = 1; i < n; ++i)
-      pows[i] = pows[i - 1] * 2 % MOD;
+      pows[i] = (pows[i - 1] <<1) % MOD;
 
     Arrays.sort(nums);
 
