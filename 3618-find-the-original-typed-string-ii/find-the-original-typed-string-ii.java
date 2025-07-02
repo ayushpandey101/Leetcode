@@ -1,57 +1,48 @@
 class Solution {
-    private static int MOD = 1_000_000_007;
-
     public int possibleStringCount(String word, int k) {
-        if (word.isEmpty())
-            return 0;
-
-        List<Integer> groups = new ArrayList<>();
-
-        // Count consecutive character groups
-        int count = 1;
-        for (int i = 1; i < word.length(); i++) {
-            if (word.charAt(i) == word.charAt(i - 1))
-                count++;
-            else {
-                groups.add(count);
-                count = 1;
-            }
-        }
-        groups.add(count); // Add the last group
-
-        // Total combinations = product of each group count
-        long total = 1;
-        for (int num : groups) {
-            total = (total * num) % MOD;
-        }
-
-        // If all strings must be at least of length k or smaller, return early
+        List<Integer> groups = getConsecutiveLetters(word);
+        final int totalCombinations = (int) groups.stream().mapToLong(Integer::longValue).reduce(1L,
+                (a, b) -> a * b % MOD);
         if (k <= groups.size())
-            return (int) total;
+            return totalCombinations;
 
-        // DP to count number of combinations with length < k
+        // dp[j] := the number of ways to form strings of length j using
+        // groups[0..i]
         int[] dp = new int[k];
-        dp[0] = 1;
+        dp[0] = 1; // Base case: empty string
 
-        for (int num : groups) {
+        for (int i = 0; i < groups.size(); ++i) {
             int[] newDp = new int[k];
-            long sum = 0;
-            for (int s = 0; s < k; s++) {
-                if (s > 0)
-                    sum = (sum + dp[s - 1]) % MOD;
-                if (s > num)
-                    sum = (sum - dp[s - num - 1] + MOD) % MOD;
-                newDp[s] = (int) sum;
+            int windowSum = 0;
+            int group = groups.get(i);
+            for (int j = i; j < k; ++j) {
+                newDp[j] = (newDp[j] + windowSum) % MOD;
+                windowSum = (windowSum + dp[j]) % MOD;
+                if (j >= group)
+                    windowSum = (windowSum - dp[j - group] + MOD) % MOD;
             }
             dp = newDp;
         }
 
-        // Subtract invalid combinations (length < k)
-        long invalid = 0;
-        for (int s = groups.size(); s < k; s++) {
-            invalid = (invalid + dp[s]) % MOD;
-        }
+        final int invalidCombinations = Arrays.stream(dp).reduce(0, (a, b) -> (a + b) % MOD);
+        return (totalCombinations - invalidCombinations + MOD) % MOD;
+    }
 
-        return (int) ((total - invalid + MOD) % MOD);
+    private static final int MOD = 1_000_000_007;
+
+    // Returns consecutive identical letters in the input string.
+    // e.g. "aabbbc" -> [2, 3, 1].
+    private List<Integer> getConsecutiveLetters(final String word) {
+        List<Integer> groups = new ArrayList<>();
+        int group = 1;
+        for (int i = 1; i < word.length(); ++i)
+            if (word.charAt(i) == word.charAt(i - 1)) {
+                ++group;
+            } else {
+                groups.add(group);
+                group = 1;
+            }
+        groups.add(group);
+        return groups;
     }
 }
