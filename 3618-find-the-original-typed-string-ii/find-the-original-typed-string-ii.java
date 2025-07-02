@@ -1,48 +1,37 @@
 class Solution {
+       private static final long MOD = (long)1e9 + 7;
     public int possibleStringCount(String word, int k) {
-        List<Integer> groups = getConsecutiveLetters(word);
-        final int totalCombinations = (int) groups.stream().mapToLong(Integer::longValue).reduce(1L,
-                (a, b) -> a * b % MOD);
-        if (k <= groups.size())
-            return totalCombinations;
-
-        // dp[j] := the number of ways to form strings of length j using
-        // groups[0..i]
-        int[] dp = new int[k];
-        dp[0] = 1; // Base case: empty string
-
-        for (int i = 0; i < groups.size(); ++i) {
-            int[] newDp = new int[k];
-            int windowSum = 0;
-            int group = groups.get(i);
-            for (int j = i; j < k; ++j) {
-                newDp[j] = (newDp[j] + windowSum) % MOD;
-                windowSum = (windowSum + dp[j]) % MOD;
-                if (j >= group)
-                    windowSum = (windowSum - dp[j - group] + MOD) % MOD;
-            }
-            dp = newDp;
+        if(word.length()==k) return 1;
+        List<Integer> list = new ArrayList<>();
+        int n = word.length();
+        int i = 0;
+        while (i < n) {
+            int j = i+1;
+            while (j < n && word.charAt(j) == word.charAt(j-1)) j++;
+            list.add(j - i);
+            i = j;
         }
-
-        final int invalidCombinations = Arrays.stream(dp).reduce(0, (a, b) -> (a + b) % MOD);
-        return (totalCombinations - invalidCombinations + MOD) % MOD;
-    }
-
-    private static final int MOD = 1_000_000_007;
-
-    // Returns consecutive identical letters in the input string.
-    // e.g. "aabbbc" -> [2, 3, 1].
-    private List<Integer> getConsecutiveLetters(final String word) {
-        List<Integer> groups = new ArrayList<>();
-        int group = 1;
-        for (int i = 1; i < word.length(); ++i)
-            if (word.charAt(i) == word.charAt(i - 1)) {
-                ++group;
-            } else {
-                groups.add(group);
-                group = 1;
+        int m = list.size();
+        long[] power = new long[m];
+        power[m-1] = list.get(m-1);
+        for (i = m-2; i >= 0; i--) {
+            power[i] = (power[i+1] * list.get(i)) % MOD;
+        }
+        if (m >= k) return (int)power[0];
+        long[][] dp = new long[m][k-m+1];
+        for (i = 0; i < k-m+1; i++) {
+            if (list.get(m-1) + i + m > k) dp[m-1][i] = list.get(m-1) - (k-m-i);
+        }
+        for (i = m-2; i >= 0; i--) {
+            long sum = (dp[i+1][k-m] * list.get(i)) % MOD;
+            for (int j = k-m; j >= 0; j--) {
+                sum += dp[i+1][j];
+                if (j + list.get(i) > k-m) sum = (sum - dp[i+1][k-m] + MOD) % MOD;
+                else sum = (sum - dp[i+1][j+list.get(i)] + MOD) % MOD;
+                dp[i][j] = sum;
             }
-        groups.add(group);
-        return groups;
+        }
+        return (int)dp[0][0];
     }
+ 
 }
