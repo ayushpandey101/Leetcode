@@ -1,15 +1,19 @@
-import java.util.Arrays;
-
 class Solution {
-  public int maximumLength(int[] nums) {
-    // dp[i][j] := max length of valid subsequence where last num % 2 == i
-    // and next desired num % 2 == j
-    int[][] dp = new int[2][2];
+    public int maximumLength(int[] nums) {
+        int cnt1 = 0, cnt2 = 0;
+        for (int num : nums) {
+            if (num % 2 == 0) cnt1++;
+            else cnt2++;
+        }
 
-    for (final int x : nums)
-      for (int y = 0; y < 2; ++y)
-        dp[x % 2][y] = Math.max(dp[x % 2][y], dp[y][x % 2] + 1);
+        int eve = 0, odd = 0;
+        for (int num : nums) {
+            if (num % 2 == 0)
+                eve = Math.max(eve, odd + 1);
+            else
+                odd = Math.max(odd, eve + 1);
+        }
 
-    return Arrays.stream(dp).flatMapToInt(Arrays::stream).max().getAsInt();
-  }
+        return Math.max(Math.max(cnt1, cnt2), Math.max(eve, odd));
+    }
 }
