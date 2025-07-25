@@ -8,6 +8,7 @@ class Solution {
                 num.add(nums[i]);
             }
             else{
+                
                 max=Math.max(max,nums[i]);
             }
         }
