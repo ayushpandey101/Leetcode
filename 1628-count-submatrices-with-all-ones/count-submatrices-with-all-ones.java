@@ -1,35 +1,48 @@
 class Solution {
     public int numSubmat(int[][] mat) {
-        int r = mat.length, c = mat[0].length;
-        int[] h = new int[c];
-        int ans = 0;
 
-        for (int i = 0; i < r; i++) {
-            for (int j = 0; j < c; j++) {
-                h[j] = (mat[i][j] == 0) ? 0 : h[j] + 1;
+         int n = mat.length;
+        int m = mat[0].length;
+
+        int ans = 0;
+        int[] height = new int[m];
+
+        for (int i = 0; i < n; i++) {
+            // Update histogram heights
+            for (int j = 0; j < m; j++) {
+                height[j] = (mat[i][j] == 0) ? 0 : height[j] + 1;
             }
-            ans += count(h);
+
+            // Count rectangles in current histogram
+            ans += countRectangles(height);
         }
+
         return ans;
     }
 
-    private int count(int[] h) {
-        int n = h.length, res = 0;
-        int[] sum = new int[n];
-        Deque<Integer> st = new ArrayDeque<>();
 
-        for (int i = 0; i < n; i++) {
-            while (!st.isEmpty() && h[st.peek()] >= h[i])
-                st.pop();
-            if (!st.isEmpty()) {
-                int p = st.peek();
-                sum[i] = sum[p] + h[i] * (i - p);
-            } else {
-                sum[i] = h[i] * (i + 1);
+    private int countRectangles(int[] height) {
+        int m = height.length;
+        int count = 0;
+        int[] stack = new int[m];
+        int top = -1;
+        int[] sum = new int[m];
+
+        for (int j = 0; j < m; j++) {
+            while (top >= 0 && height[stack[top]] >= height[j]) {
+                top--;
             }
-            st.push(i);
-            res += sum[i];
+
+            if (top == -1) {
+                sum[j] = height[j] * (j + 1);
+            } else {
+                sum[j] = sum[stack[top]] + height[j] * (j - stack[top]);
+            }
+
+            count += sum[j];
+            stack[++top] = j;
         }
-        return res;
+
+        return count;
     }
 }
