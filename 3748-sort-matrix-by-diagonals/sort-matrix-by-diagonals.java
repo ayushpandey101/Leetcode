@@ -1,26 +1,38 @@
-import java.util.*;
-
 class Solution {
-    public int[][] sortMatrix(int[][] matrix) {
-        Map<Integer, PriorityQueue<Integer>> diagonalMap = new HashMap<>();
-        int rows = matrix.length, cols = matrix[0].length;
+    public int[][] sortMatrix(int[][] grid) {
+        int n = grid.length;
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                int key = i - j;
-                diagonalMap.putIfAbsent(key, key < 0 ? new PriorityQueue<>()
-                        : new PriorityQueue<>(Collections.reverseOrder()));
-                diagonalMap.get(key).offer(matrix[i][j]);
+        for (int d = 1; d < n; d++) {
+            int i = 0, j = d;
+            PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> (a - b));
+            int dummyi = i, dummyj = j;
+            while (i < n && j < n) {
+                pq.offer(grid[i][j]);
+                i++;
+                j++;
+            }
+            while (dummyi < n && dummyj < n) {
+                grid[dummyi][dummyj] = pq.poll();
+                dummyi++;
+                dummyj++;
             }
         }
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                int key = i - j;
-                matrix[i][j] = diagonalMap.get(key).poll();
+        for (int d = 0; d < n; d++) {
+            int i = d, j = 0;
+            PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> (b - a));
+            int dummyi = i, dummyj = j;
+            while (i < n && j < n) {
+                pq.offer(grid[i][j]);
+                i++;
+                j++;
+            }
+            while (dummyi < n && dummyj < n) {
+                grid[dummyi][dummyj] = pq.poll();
+                dummyi++;
+                dummyj++;
             }
         }
-
-        return matrix;
+        return grid;
     }
 }
