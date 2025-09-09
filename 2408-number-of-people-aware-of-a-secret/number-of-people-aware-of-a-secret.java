@@ -2,7 +2,8 @@ class Solution {
     public int peopleAwareOfSecret(int n, int delay, int forget) {
         long[] dp = new long[n + 1];
         dp[1] = 1;
-        long share = 0, MOD = (long)1e9 + 7;
+        int MOD = 1_000_000_007;
+        long share = 0;
         for (int t = 2; t <= n; t++) {
             if (t - delay > 0)
                 share = (share + dp[t - delay] + MOD) % MOD;
